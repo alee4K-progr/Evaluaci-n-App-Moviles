@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Alba Lab</string>
+    <string name="canal_notificaciones_nombre">Confirmaciones de colaboración</string>
+    <string name="canal_notificaciones_descripcion">Avisos locales cuando se registra tu interés de colaborar</string>
+</resources>
