@@ -15,7 +15,7 @@ y Vinculación Empresarial* y a la **Evaluación Parcial 2** de *Desarrollo de A
 | Mauricio Ahumada | 
 | Alexander Arancibia |
 
-Equipo N.º: No me acuerdo · Asignatura: DSY1105 · Duoc UC
+Equipo N.º: 9 · Asignatura: DSY1105 · Duoc UC
 
 ## ¿Qué problema resuelve?
 
