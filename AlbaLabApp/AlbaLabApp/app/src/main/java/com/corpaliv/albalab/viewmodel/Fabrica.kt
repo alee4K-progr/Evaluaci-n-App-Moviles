@@ -18,7 +18,7 @@ object Fabrica {
         }
         initializer {
             val c = app().contenedor
-            InteresViewModel(c.interesRepository, c.sesionDataStore)
+            InteresViewModel(c.interesRepository, c.sesionDataStore, c.indicadoresRepository)
         }
         initializer {
             val c = app().contenedor
@@ -27,7 +27,11 @@ object Fabrica {
         initializer {
             RegistrosViewModel(app().contenedor.interesRepository)
         }
-        initializer { ProgramasViewModel() }
-        initializer { CatalogoViewModel() }
+        initializer { ProgramasViewModel(app().contenedor.catalogoRepository) }
+        initializer { CatalogoViewModel(app().contenedor.catalogoRepository) }
+        initializer { ContenidoViewModel(app().contenedor.catalogoRepository) }
+        initializer { GestorLoginViewModel(app().contenedor.gestionRepository) }
+        initializer { GestionViewModel(app().contenedor.gestionRepository) }
+        initializer { SolicitudDetalleViewModel(app().contenedor.gestionRepository) }
     }
 }
