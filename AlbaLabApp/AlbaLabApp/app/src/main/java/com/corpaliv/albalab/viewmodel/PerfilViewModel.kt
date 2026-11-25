@@ -3,7 +3,7 @@ package com.corpaliv.albalab.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.corpaliv.albalab.data.preferences.SesionDataStore
+import com.corpaliv.albalab.data.preferences.PreferenciasSesion
 import com.corpaliv.albalab.data.repository.AlmacenFotos
 import com.corpaliv.albalab.data.repository.UsuarioRepository
 import kotlinx.coroutines.channels.Channel
@@ -20,7 +20,7 @@ import java.io.File
 class PerfilViewModel(
     private val usuarios: UsuarioRepository,
     private val fotos: AlmacenFotos,
-    private val sesionDataStore: SesionDataStore
+    private val sesionDataStore: PreferenciasSesion
 ) : ViewModel() {
 
     val notificaciones: StateFlow<Boolean> = sesionDataStore.notificacionesActivas

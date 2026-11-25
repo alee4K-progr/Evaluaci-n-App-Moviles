@@ -3,7 +3,7 @@ package com.corpaliv.albalab.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.corpaliv.albalab.data.local.UsuarioEntity
-import com.corpaliv.albalab.data.preferences.SesionDataStore
+import com.corpaliv.albalab.data.preferences.PreferenciasSesion
 import com.corpaliv.albalab.data.repository.ResultadoAuth
 import com.corpaliv.albalab.data.repository.UsuarioRepository
 import com.corpaliv.albalab.domain.validation.Validadores
@@ -80,7 +80,7 @@ data class RegistroUiState(
 /** Maneja sesión, login y registro de cuenta (MVVM: la lógica vive aquí, no en las pantallas). */
 class AuthViewModel(
     private val usuarios: UsuarioRepository,
-    private val sesionDataStore: SesionDataStore
+    private val sesionDataStore: PreferenciasSesion
 ) : ViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
