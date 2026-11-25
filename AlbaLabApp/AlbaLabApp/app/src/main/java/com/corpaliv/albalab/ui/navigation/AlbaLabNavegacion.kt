@@ -51,7 +51,10 @@ import com.corpaliv.albalab.domain.model.TipoColaboracion
 import com.corpaliv.albalab.ui.components.RecolectarEventos
 import com.corpaliv.albalab.ui.screens.CatalogoScreen
 import com.corpaliv.albalab.ui.screens.ColaborarScreen
+import com.corpaliv.albalab.ui.screens.GestionScreen
+import com.corpaliv.albalab.ui.screens.GestorLoginScreen
 import com.corpaliv.albalab.ui.screens.ImpactoScreen
+import com.corpaliv.albalab.ui.screens.SolicitudDetalleScreen
 import com.corpaliv.albalab.ui.screens.InicioScreen
 import com.corpaliv.albalab.ui.screens.LoginScreen
 import com.corpaliv.albalab.ui.screens.PerfilScreen
@@ -201,15 +204,15 @@ fun AlbaLabRaiz(authVm: AuthViewModel = viewModel(factory = Fabrica.instancia)) 
             }
             composable(Rutas.PROGRAMAS) {
                 ProgramasScreen(
-                    onColaborar = { tipo, ref ->
-                        navController.navigate(Rutas.colaborar(tipo, ref)) { launchSingleTop = true }
+                    onColaborar = { tipo, ref, programaId, productoId ->
+                        navController.navigate(Rutas.colaborar(tipo, ref, programaId, productoId)) { launchSingleTop = true }
                     }
                 )
             }
             composable(Rutas.CATALOGO) {
                 CatalogoScreen(
-                    onColaborar = { tipo, ref ->
-                        navController.navigate(Rutas.colaborar(tipo, ref)) { launchSingleTop = true }
+                    onColaborar = { tipo, ref, programaId, productoId ->
+                        navController.navigate(Rutas.colaborar(tipo, ref, programaId, productoId)) { launchSingleTop = true }
                     }
                 )
             }
@@ -226,12 +229,22 @@ fun AlbaLabRaiz(authVm: AuthViewModel = viewModel(factory = Fabrica.instancia)) 
                     navArgument(Rutas.ARG_REF) {
                         type = NavType.StringType
                         defaultValue = ""
+                    },
+                    navArgument(Rutas.ARG_PROGRAMA) {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                    navArgument(Rutas.ARG_PRODUCTO) {
+                        type = NavType.StringType
+                        defaultValue = ""
                     }
                 )
             ) { destino ->
                 ColaborarScreen(
                     tipoInicial = TipoColaboracion.desdeNombre(destino.arguments?.getString(Rutas.ARG_TIPO)),
                     referencia = destino.arguments?.getString(Rutas.ARG_REF).orEmpty(),
+                    programaId = destino.arguments?.getString(Rutas.ARG_PROGRAMA)?.ifBlank { null },
+                    productoId = destino.arguments?.getString(Rutas.ARG_PRODUCTO)?.ifBlank { null },
                     sesion = sesion,
                     snackbar = snackbar,
                     onVerRegistros = { navController.navigate(Rutas.REGISTROS) { launchSingleTop = true } }
@@ -242,7 +255,39 @@ fun AlbaLabRaiz(authVm: AuthViewModel = viewModel(factory = Fabrica.instancia)) 
                     sesion = sesion,
                     authVm = authVm,
                     snackbar = snackbar,
-                    onVerRegistros = { navController.navigate(Rutas.REGISTROS) { launchSingleTop = true } }
+                    onVerRegistros = { navController.navigate(Rutas.REGISTROS) { launchSingleTop = true } },
+                    onAccesoGestor = { navController.navigate(Rutas.GESTOR_LOGIN) { launchSingleTop = true } }
+                )
+            }
+            composable(Rutas.GESTOR_LOGIN) {
+                GestorLoginScreen(
+                    onIngreso = {
+                        navController.navigate(Rutas.GESTION) {
+                            popUpTo(Rutas.GESTOR_LOGIN) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+            composable(Rutas.GESTION) {
+                GestionScreen(
+                    onAbrir = { id -> navController.navigate(Rutas.gestionDetalle(id)) { launchSingleTop = true } },
+                    onSesionCerrada = {
+                        navController.navigate(Rutas.PERFIL) {
+                            popUpTo(Rutas.GESTION) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+            composable(
+                route = Rutas.GESTION_DETALLE_PATRON,
+                arguments = listOf(navArgument(Rutas.ARG_ID) { type = NavType.LongType })
+            ) { destino ->
+                SolicitudDetalleScreen(
+                    id = destino.arguments?.getLong(Rutas.ARG_ID) ?: 0L,
+                    snackbar = snackbar,
+                    onVolver = { navController.popBackStack() }
                 )
             }
             composable(Rutas.REGISTROS) {

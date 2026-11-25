@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
@@ -60,6 +61,7 @@ fun PerfilScreen(
     authVm: AuthViewModel,
     snackbar: SnackbarHostState,
     onVerRegistros: () -> Unit,
+    onAccesoGestor: () -> Unit,
     vm: PerfilViewModel = viewModel(factory = Fabrica.instancia)
 ) {
     RecolectarEventos(vm.eventos, snackbar)
@@ -240,6 +242,11 @@ fun PerfilScreen(
             icono = Icons.Filled.Storefront,
             onClick = onVerRegistros
         )
+        BotonSecundario(
+            texto = "Acceso equipo de vinculación",
+            icono = Icons.Filled.AdminPanelSettings,
+            onClick = onAccesoGestor
+        )
 
         if (usuario != null) {
             HorizontalDivider()
@@ -250,7 +257,7 @@ fun PerfilScreen(
             )
         }
 
-        AvisoDatosFicticios()
+
     }
 
     if (confirmarSalida) {

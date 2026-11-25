@@ -17,7 +17,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -25,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,16 +37,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.corpaliv.albalab.data.local.RegistroInteresEntity
+import com.corpaliv.albalab.domain.model.EstadoSolicitud
 import com.corpaliv.albalab.domain.model.TipoColaboracion
 import com.corpaliv.albalab.domain.validation.Validadores
 import com.corpaliv.albalab.ui.components.BotonPrincipal
+import com.corpaliv.albalab.ui.components.BotonSecundario
 import com.corpaliv.albalab.ui.components.formatoCorto
 import com.corpaliv.albalab.ui.components.icono
+import com.corpaliv.albalab.viewmodel.ConsultaUiState
 import com.corpaliv.albalab.viewmodel.Fabrica
 import com.corpaliv.albalab.viewmodel.RegistrosViewModel
 import java.time.Instant
@@ -56,45 +66,54 @@ fun RegistrosScreen(
     vm: RegistrosViewModel = viewModel(factory = Fabrica.instancia)
 ) {
     val registros by vm.registros.collectAsStateWithLifecycle()
+    val consulta by vm.consulta.collectAsStateWithLifecycle()
+    val actualizando by vm.actualizando.collectAsStateWithLifecycle()
     var aEliminar by rememberSaveable { mutableStateOf<Long?>(null) }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        if (registros.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = 720.dp)
-                    .fillMaxSize()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Storefront,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+        LazyColumn(
+            modifier = Modifier.widthIn(max = 720.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item { ConsultaPorCodigo(consulta, vm::cambiarCodigo, vm::consultar) }
+            item {
+                BotonSecundario(
+                    texto = if (actualizando) "Actualizando…" else "Actualizar estados",
+                    icono = Icons.Filled.Refresh,
+                    onClick = vm::sincronizar,
+                    habilitado = !actualizando
                 )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = "Aún no has registrado ningún interés",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "Cuando envíes el formulario de colaboración, tu registro aparecerá aquí.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(16.dp))
-                BotonPrincipal(texto = "Quiero colaborar", onClick = onNuevoRegistro)
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.widthIn(max = 720.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            if (registros.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Storefront,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "Aún no has registrado ningún interés",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "Cuando envíes el formulario de colaboración, tu registro aparecerá aquí.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        BotonPrincipal(texto = "Quiero colaborar", onClick = onNuevoRegistro)
+                    }
+                }
+            } else {
                 items(registros, key = { it.id }) { registro ->
                     TarjetaRegistro(registro, onEliminar = { aEliminar = registro.id })
                 }
@@ -107,7 +126,7 @@ fun RegistrosScreen(
         AlertDialog(
             onDismissRequest = { aEliminar = null },
             title = { Text("¿Eliminar registro?") },
-            text = { Text("Se borrará de este dispositivo. Esta acción no se puede deshacer.") },
+            text = { Text("Se borrará de este dispositivo; la solicitud ya enviada al equipo de vinculación no se elimina. Esta acción no se puede deshacer.") },
             confirmButton = {
                 TextButton(onClick = {
                     vm.eliminar(idEliminar)
@@ -116,6 +135,49 @@ fun RegistrosScreen(
             },
             dismissButton = { TextButton(onClick = { aEliminar = null }) { Text("Cancelar") } }
         )
+    }
+}
+
+/** Consulta pública del estado de una solicitud con su código (no requiere cuenta). */
+@Composable
+private fun ConsultaPorCodigo(
+    estado: ConsultaUiState,
+    onCodigo: (String) -> Unit,
+    onConsultar: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Consultar una solicitud", style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(
+                value = estado.codigo,
+                onValueChange = onCodigo,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Código (ej. AL-K7M2P9XQ)") },
+                singleLine = true,
+                isError = estado.error != null,
+                supportingText = if (estado.error != null) { { Text(estado.error) } } else null,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onConsultar() })
+            )
+            BotonPrincipal(
+                texto = "Consultar estado",
+                icono = Icons.Filled.Search,
+                onClick = onConsultar,
+                cargando = estado.consultando
+            )
+            estado.resultado?.let { r ->
+                Text("${r.codigo}: ${r.estado.etiqueta}", style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary)
+                Text(r.estado.descripcion, style = MaterialTheme.typography.bodyMedium)
+                Text("Última actualización: ${r.fechaActualizacion.replace('T', ' ').take(16)}",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }
 
@@ -153,7 +215,8 @@ private fun TarjetaRegistro(registro: RegistroInteresEntity, onEliminar: () -> U
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "${registro.correo} · ${registro.comuna}",
+                text = listOf(registro.correo, registro.telefono).filter { it.isNotBlank() }.joinToString(" · ") +
+                    " · ${registro.comuna}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -180,8 +243,10 @@ private fun TarjetaRegistro(registro: RegistroInteresEntity, onEliminar: () -> U
                     tint = MaterialTheme.colorScheme.tertiary
                 )
                 Spacer(Modifier.size(4.dp))
+                val estadoRemoto = EstadoSolicitud.desdeNombre(registro.estadoRemoto)
                 Text(
-                    text = if (registro.sincronizado) "Enviado al equipo de vinculación"
+                    text = if (registro.sincronizado)
+                        "Código ${registro.remoteId.orEmpty()} · ${estadoRemoto?.etiqueta ?: "Enviada"}"
                     else "Guardado en el dispositivo · pendiente de envío",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.tertiary

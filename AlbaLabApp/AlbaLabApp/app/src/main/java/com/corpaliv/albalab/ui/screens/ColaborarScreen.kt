@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.corpaliv.albalab.domain.model.TipoColaboracion
+import com.corpaliv.albalab.domain.Conversion
 import com.corpaliv.albalab.domain.validation.Validadores
 import com.corpaliv.albalab.nativo.NotificadorLocal
 import com.corpaliv.albalab.ui.components.AvisoDatosFicticios
@@ -85,6 +86,8 @@ import com.corpaliv.albalab.viewmodel.InteresViewModel
 fun ColaborarScreen(
     tipoInicial: TipoColaboracion?,
     referencia: String,
+    programaId: String?,
+    productoId: String?,
     sesion: EstadoSesion,
     snackbar: SnackbarHostState,
     onVerRegistros: () -> Unit,
@@ -93,8 +96,8 @@ fun ColaborarScreen(
     val estado by vm.estado.collectAsStateWithLifecycle()
     RecolectarEventos(vm.eventos, snackbar)
 
-    LaunchedEffect(tipoInicial, referencia) {
-        if (tipoInicial != null || referencia.isNotBlank()) vm.precargar(tipoInicial, referencia)
+    LaunchedEffect(tipoInicial, referencia, programaId, productoId) {
+        if (tipoInicial != null || referencia.isNotBlank()) vm.precargar(tipoInicial, referencia, programaId, productoId)
     }
     LaunchedEffect(sesion) {
         if (sesion is EstadoSesion.Autenticado) {
@@ -136,7 +139,7 @@ private fun Formulario(
             titulo = "Quiero colaborar",
             subtitulo = "Déjanos tus datos y el equipo de vinculación te contactará"
         )
-        AvisoDatosFicticios()
+
 
         // ---- Sobre ti ----
         Text("Sobre ti", style = MaterialTheme.typography.titleMedium)
@@ -187,6 +190,7 @@ private fun Formulario(
             valor = estado.correo,
             onValorChange = vm::cambiarCorreo,
             etiqueta = "Correo de contacto",
+            ayuda = "Indica al menos un correo o un teléfono",
             iconoInicial = Icons.Filled.Email,
             error = estado.error(CampoInteres.CORREO),
             mostrarError = estado.mostrarError(CampoInteres.CORREO),
@@ -197,7 +201,7 @@ private fun Formulario(
         CampoValidado(
             valor = estado.telefono,
             onValorChange = vm::cambiarTelefono,
-            etiqueta = "Teléfono móvil (opcional)",
+            etiqueta = "Teléfono móvil",
             iconoInicial = Icons.Filled.Phone,
             error = estado.error(CampoInteres.TELEFONO),
             mostrarError = estado.mostrarError(CampoInteres.TELEFONO),
@@ -240,7 +244,10 @@ private fun Formulario(
                 mostrarError = estado.mostrarError(CampoInteres.MONTO),
                 teclado = KeyboardType.Number,
                 ayuda = "Entre $${Validadores.formatoMiles(Validadores.MONTO_MINIMO)} y " +
-                    "$${Validadores.formatoMiles(Validadores.MONTO_MAXIMO)}",
+                    "$${Validadores.formatoMiles(Validadores.MONTO_MAXIMO)}" +
+                    (estado.montoEnDolares?.let {
+                        " · ≈ US$ ${Conversion.formatoDolares(it)} (dólar observado, mindicador.cl)"
+                    } ?: ""),
                 onPerderFoco = { vm.tocarCampo(CampoInteres.MONTO) }
             )
         }

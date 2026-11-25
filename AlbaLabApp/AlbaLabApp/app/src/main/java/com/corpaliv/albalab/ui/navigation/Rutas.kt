@@ -14,16 +14,33 @@ object Rutas {
     const val COLABORAR = "colaborar"
     const val PERFIL = "perfil"
     const val REGISTROS = "registros"
+    const val GESTOR_LOGIN = "gestor_login"
+    const val GESTION = "gestion"
+    const val ARG_ID = "id"
+    const val GESTION_DETALLE = "gestion_detalle"
+    const val GESTION_DETALLE_PATRON = "$GESTION_DETALLE/{$ARG_ID}"
+
+    fun gestionDetalle(id: Long) = "$GESTION_DETALLE/$id"
 
     const val ARG_TIPO = "tipo"
     const val ARG_REF = "ref"
-    const val COLABORAR_PATRON = "$COLABORAR?$ARG_TIPO={$ARG_TIPO}&$ARG_REF={$ARG_REF}"
+    const val ARG_PROGRAMA = "prog"
+    const val ARG_PRODUCTO = "prod"
+    const val COLABORAR_PATRON =
+        "$COLABORAR?$ARG_TIPO={$ARG_TIPO}&$ARG_REF={$ARG_REF}&$ARG_PROGRAMA={$ARG_PROGRAMA}&$ARG_PRODUCTO={$ARG_PRODUCTO}"
 
     /** Ruta del formulario de colaboración con datos precargados opcionales. */
-    fun colaborar(tipo: TipoColaboracion? = null, referencia: String = ""): String {
+    fun colaborar(
+        tipo: TipoColaboracion? = null,
+        referencia: String = "",
+        programaId: String? = null,
+        productoId: String? = null
+    ): String {
         val params = buildList {
             if (tipo != null) add("$ARG_TIPO=${tipo.name}")
             if (referencia.isNotBlank()) add("$ARG_REF=${Uri.encode(referencia)}")
+            if (!programaId.isNullOrBlank()) add("$ARG_PROGRAMA=${Uri.encode(programaId)}")
+            if (!productoId.isNullOrBlank()) add("$ARG_PRODUCTO=${Uri.encode(productoId)}")
         }
         return if (params.isEmpty()) COLABORAR else "$COLABORAR?${params.joinToString("&")}"
     }
@@ -39,6 +56,9 @@ object Rutas {
         COLABORAR -> "Quiero colaborar"
         PERFIL -> "Mi perfil"
         REGISTROS -> "Mis registros"
+        GESTOR_LOGIN -> "Equipo de vinculación"
+        GESTION -> "Gestión de solicitudes"
+        GESTION_DETALLE_PATRON, GESTION_DETALLE -> "Detalle de solicitud"
         else -> "Alba Lab"
     }
 }

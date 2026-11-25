@@ -38,7 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.corpaliv.albalab.data.catalogo.CatalogoDatos
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.corpaliv.albalab.data.repository.Origen
 import com.corpaliv.albalab.domain.model.DestinoAporte
 import com.corpaliv.albalab.domain.model.TipoColaboracion
 import com.corpaliv.albalab.ui.components.AvisoDatosFicticios
@@ -48,14 +50,18 @@ import com.corpaliv.albalab.ui.components.ContenedorPantalla
 import com.corpaliv.albalab.ui.components.NumeroAnimado
 import com.corpaliv.albalab.ui.components.TituloSeccion
 import com.corpaliv.albalab.ui.components.icono
+import com.corpaliv.albalab.viewmodel.ContenidoViewModel
 import com.corpaliv.albalab.viewmodel.EstadoSesion
+import com.corpaliv.albalab.viewmodel.Fabrica
 
 @Composable
 fun InicioScreen(
     sesion: EstadoSesion,
     onColaborar: (TipoColaboracion?) -> Unit,
-    onVerProgramas: () -> Unit
+    onVerProgramas: () -> Unit,
+    vm: ContenidoViewModel = viewModel(factory = Fabrica.instancia)
 ) {
+    val contenido by vm.estado.collectAsStateWithLifecycle()
     ContenedorPantalla {
         if (sesion is EstadoSesion.Autenticado) {
             Text(
@@ -106,7 +112,7 @@ fun InicioScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            CatalogoDatos.indicadores.forEach { indicador ->
+            contenido.indicadores.forEach { indicador ->
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
@@ -159,11 +165,14 @@ fun InicioScreen(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                CatalogoDatos.destinoAportes.forEach { destino -> BarraDestino(destino) }
+                contenido.destinoAportes.forEach { destino -> BarraDestino(destino) }
             }
         }
 
-        AvisoDatosFicticios()
+        if (!contenido.cargando && contenido.origen == Origen.LOCAL) {
+            AvisoDatosFicticios(texto = "Sin conexión con el servidor: se muestra el contenido guardado en la app.")
+        }
+
     }
 }
 
