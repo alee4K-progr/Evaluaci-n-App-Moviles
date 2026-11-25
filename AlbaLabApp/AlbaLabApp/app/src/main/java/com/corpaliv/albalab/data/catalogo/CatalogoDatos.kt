@@ -37,7 +37,7 @@ object CatalogoDatos {
                 "capacitación en oficios, simulaciones de entrevistas y prácticas en empresas aliadas, " +
                 "con seguimiento individual.",
             categoria = CategoriaPrograma.EMPLEO,
-            tipoSugerido = TipoColaboracion.ALIANZA
+            tipoSugerido = TipoColaboracion.ALIANZA_RSE
         ),
         Programa(
             id = "p3",
@@ -55,7 +55,7 @@ object CatalogoDatos {
             detalle = "Vinculación con empresas que desean integrar prácticas inclusivas: pasantías, " +
                 "compras con impacto social, donaciones corporativas y jornadas de voluntariado.",
             categoria = CategoriaPrograma.VINCULACION,
-            tipoSugerido = TipoColaboracion.ALIANZA
+            tipoSugerido = TipoColaboracion.ALIANZA_RSE
         ),
         Programa(
             id = "p5",
