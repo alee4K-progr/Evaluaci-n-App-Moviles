@@ -1,0 +1,28 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: api-gateway
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      routes:
+        - id: ms-admin
+          uri: ${MS_ADMIN_URL:http://ms-admin:9093}
+          predicates:
+            - Path=/auth/**
+        - id: ms-contenidos
+          uri: ${MS_CONTENIDOS_URL:http://ms-contenidos:9091}
+          predicates:
+            - Path=/contenidos/**
+        - id: ms-vinculacion
+          uri: ${MS_VINCULACION_URL:http://ms-vinculacion:9092}
+          predicates:
+            - Path=/vinculacion/**
+
+# Secreto compartido con ms-admin (variable de entorno SECRET, minimo 32 caracteres).
+# El valor por defecto es SOLO para desarrollo local.
+jwt:
+  secret: ${SECRET:albalab-clave-solo-desarrollo-local-0123456789}
