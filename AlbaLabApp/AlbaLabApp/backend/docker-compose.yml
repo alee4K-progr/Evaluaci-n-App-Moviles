@@ -1,0 +1,62 @@
+# Levantar todo:   docker compose up -d --build     (antes: ./build-all.sh  o  build-all.bat)
+# Bajar:           docker compose down
+#
+# Base de datos: igual que el ejemplo del profe, cada microservicio usa su propia BD en un MySQL del equipo
+# (host.docker.internal:3306, usuario root sin clave por defecto). Si no tienes MySQL instalado, usa el
+# servicio opcional "mysql" de este archivo:
+#     DB_HOST=mysql docker compose --profile con-mysql up -d --build
+
+x-comun: &comun
+  SECRET: "${SECRET:-albalab-clave-solo-desarrollo-local-0123456789}"
+  DB_HOST: "${DB_HOST:-host.docker.internal}"
+  DB_PORT: "${DB_PORT:-3306}"
+  DB_USER: "${DB_USER:-root}"
+  DB_PASSWORD: "${DB_PASSWORD:-}"
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "9090:9090"
+    environment:
+      <<: *comun
+    depends_on:
+      - ms-admin
+      - ms-contenidos
+      - ms-vinculacion
+
+  ms-contenidos:
+    build: ./ms-contenidos
+    ports:
+      - "9091:9091"
+    environment:
+      <<: *comun
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ms-vinculacion:
+    build: ./ms-vinculacion
+    ports:
+      - "9092:9092"
+    environment:
+      <<: *comun
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ms-admin:
+    build: ./ms-admin
+    ports:
+      - "9093:9093"
+    environment:
+      <<: *comun
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Opcional (perfil con-mysql): MySQL propio para quien no tiene uno instalado.
+  mysql:
+    image: mysql:8.4
+    profiles: ["con-mysql"]
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
