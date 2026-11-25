@@ -218,7 +218,7 @@ fun LoginScreen(
             onClick = authVm::continuarComoInvitado
         )
 
-        AvisoDatosFicticios()
+
     }
 }
 
@@ -315,6 +315,6 @@ fun RegistroScreen(
             Text("Ya tengo cuenta: volver a ingresar")
         }
 
-        AvisoDatosFicticios()
+        
     }
 }

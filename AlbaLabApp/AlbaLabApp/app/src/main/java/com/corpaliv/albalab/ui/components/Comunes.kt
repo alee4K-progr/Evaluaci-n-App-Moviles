@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Button
@@ -67,7 +69,7 @@ import java.io.File
 /** Ícono que representa cada modalidad de colaboración. */
 fun TipoColaboracion.icono(): ImageVector = when (this) {
     TipoColaboracion.DONACION -> Icons.Filled.Favorite
-    TipoColaboracion.ALIANZA -> Icons.Filled.Groups
+    TipoColaboracion.ALIANZA_RSE -> Icons.Filled.Groups
     TipoColaboracion.VOLUNTARIADO -> Icons.Filled.VolunteerActivism
     TipoColaboracion.COMPRA -> Icons.Filled.ShoppingBag
     TipoColaboracion.CAPACITACION -> Icons.Filled.School
@@ -127,10 +129,12 @@ fun BotonSecundario(
     texto: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    icono: ImageVector? = null
+    icono: ImageVector? = null,
+    habilitado: Boolean = true
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = habilitado,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 52.dp)
@@ -292,4 +296,20 @@ fun ContenedorPantalla(
             content = contenido
         )
     }
+}
+
+/** Ilustración de un programa o producto entregada por ms-contenidos. No se dibuja si no hay URL (modo sin conexión). */
+@Composable
+fun ImagenContenido(url: String?, modifier: Modifier = Modifier) {
+    if (url.isNullOrBlank()) return
+    AsyncImage(
+        model = url,
+        contentDescription = null, // decorativa: el título de la tarjeta ya describe el contenido
+        modifier = modifier
+            .fillMaxWidth()
+            .height(150.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentScale = ContentScale.Crop
+    )
 }

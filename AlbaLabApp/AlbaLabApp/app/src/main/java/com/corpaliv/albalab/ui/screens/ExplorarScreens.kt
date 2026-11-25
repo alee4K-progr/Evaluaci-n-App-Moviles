@@ -40,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.corpaliv.albalab.data.catalogo.CatalogoDatos
 import com.corpaliv.albalab.domain.model.CasoImpacto
 import com.corpaliv.albalab.domain.model.CategoriaProducto
 import com.corpaliv.albalab.domain.model.CategoriaPrograma
@@ -48,12 +47,13 @@ import com.corpaliv.albalab.domain.model.Producto
 import com.corpaliv.albalab.domain.model.Programa
 import com.corpaliv.albalab.domain.model.TipoColaboracion
 import com.corpaliv.albalab.domain.validation.Validadores
-import com.corpaliv.albalab.ui.components.AvisoDatosFicticios
 import com.corpaliv.albalab.ui.components.BotonSecundario
+import com.corpaliv.albalab.ui.components.ImagenContenido
 import com.corpaliv.albalab.ui.components.NumeroAnimado
 import com.corpaliv.albalab.ui.components.TarjetaAnimada
 import com.corpaliv.albalab.ui.components.TituloSeccion
 import com.corpaliv.albalab.viewmodel.CatalogoViewModel
+import com.corpaliv.albalab.viewmodel.ContenidoViewModel
 import com.corpaliv.albalab.viewmodel.Fabrica
 import com.corpaliv.albalab.viewmodel.ProgramasViewModel
 
@@ -109,7 +109,7 @@ private fun SinResultados(texto: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramasScreen(
-    onColaborar: (TipoColaboracion, String) -> Unit,
+    onColaborar: (TipoColaboracion, String, String?, String?) -> Unit,
     vm: ProgramasViewModel = viewModel(factory = Fabrica.instancia)
 ) {
     val consulta by vm.consulta.collectAsStateWithLifecycle()
@@ -154,7 +154,7 @@ fun ProgramasScreen(
             items(programas, key = { it.id }) { programa ->
                 TarjetaPrograma(programa, onColaborar)
             }
-            item { AvisoDatosFicticios() }
+
         }
     }
 }
@@ -163,10 +163,11 @@ fun ProgramasScreen(
 @Composable
 private fun TarjetaPrograma(
     programa: Programa,
-    onColaborar: (TipoColaboracion, String) -> Unit
+    onColaborar: (TipoColaboracion, String, String?, String?) -> Unit
 ) {
     var expandido by rememberSaveable(programa.id) { mutableStateOf(false) }
     TarjetaAnimada {
+        ImagenContenido(programa.imagenUrl)
         AssistChip(onClick = {}, label = { Text(programa.categoria.etiqueta) })
         Text(text = programa.titulo, style = MaterialTheme.typography.titleLarge)
         Text(
@@ -180,7 +181,7 @@ private fun TarjetaPrograma(
                 BotonSecundario(
                     texto = "Quiero apoyar este programa",
                     icono = Icons.Filled.VolunteerActivism,
-                    onClick = { onColaborar(programa.tipoSugerido, programa.titulo) }
+                    onClick = { onColaborar(programa.tipoSugerido, programa.titulo, programa.id, null) }
                 )
             }
         }
@@ -204,7 +205,7 @@ private fun TarjetaPrograma(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogoScreen(
-    onColaborar: (TipoColaboracion, String) -> Unit,
+    onColaborar: (TipoColaboracion, String, String?, String?) -> Unit,
     vm: CatalogoViewModel = viewModel(factory = Fabrica.instancia)
 ) {
     val consulta by vm.consulta.collectAsStateWithLifecycle()
@@ -249,7 +250,7 @@ fun CatalogoScreen(
             items(productos, key = { it.id }) { producto ->
                 TarjetaProducto(producto, onColaborar)
             }
-            item { AvisoDatosFicticios() }
+
         }
     }
 }
@@ -258,9 +259,10 @@ fun CatalogoScreen(
 @Composable
 private fun TarjetaProducto(
     producto: Producto,
-    onColaborar: (TipoColaboracion, String) -> Unit
+    onColaborar: (TipoColaboracion, String, String?, String?) -> Unit
 ) {
     TarjetaAnimada {
+        ImagenContenido(producto.imagenUrl)
         AssistChip(onClick = {}, label = { Text(producto.categoria.etiqueta.removeSuffix("s")) })
         Text(text = producto.nombre, style = MaterialTheme.typography.titleLarge)
         Text(
@@ -282,12 +284,12 @@ private fun TarjetaProducto(
         val tipo = when (producto.categoria) {
             CategoriaProducto.PRODUCTO -> TipoColaboracion.COMPRA
             CategoriaProducto.SERVICIO -> TipoColaboracion.CAPACITACION
-            CategoriaProducto.RSE -> TipoColaboracion.ALIANZA
+            CategoriaProducto.RSE -> TipoColaboracion.ALIANZA_RSE
         }
         BotonSecundario(
             texto = "Me interesa",
             icono = Icons.Filled.VolunteerActivism,
-            onClick = { onColaborar(tipo, producto.nombre) }
+            onClick = { onColaborar(tipo, producto.nombre, null, producto.id) }
         )
     }
 }
@@ -295,7 +297,11 @@ private fun TarjetaProducto(
 // ------------------------------------------------------------------ IMPACTO
 
 @Composable
-fun ImpactoScreen(onColaborar: () -> Unit) {
+fun ImpactoScreen(
+    onColaborar: () -> Unit,
+    vm: ContenidoViewModel = viewModel(factory = Fabrica.instancia)
+) {
+    val contenido by vm.estado.collectAsStateWithLifecycle()
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(
             modifier = Modifier.widthIn(max = 720.dp),
@@ -313,7 +319,7 @@ fun ImpactoScreen(onColaborar: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CatalogoDatos.indicadores.forEach { indicador ->
+                    contenido.indicadores.forEach { indicador ->
                         Column(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -333,7 +339,7 @@ fun ImpactoScreen(onColaborar: () -> Unit) {
                     }
                 }
             }
-            items(CatalogoDatos.casos, key = { it.id }) { caso -> TarjetaCaso(caso) }
+            items(contenido.casos, key = { it.id }) { caso -> TarjetaCaso(caso) }
             item {
                 BotonSecundario(
                     texto = "Quiero ser parte de la próxima historia",
@@ -341,7 +347,7 @@ fun ImpactoScreen(onColaborar: () -> Unit) {
                     onClick = onColaborar
                 )
             }
-            item { AvisoDatosFicticios(texto = "Los casos son ficticios y anonimizados: no corresponden a personas reales.") }
+
         }
     }
 }
