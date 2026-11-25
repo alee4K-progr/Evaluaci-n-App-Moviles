@@ -1,6 +1,7 @@
 *.iml
 .gradle
 /local.properties
+/backend/.env
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -13,3 +14,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Firma de la app: por exigencia de la pauta (Ev. Parcial 4) el .jks y keystore.properties SÍ se entregan
+# en el repositorio. Usar una llave desechable creada solo para esta evaluación, nunca una de publicación real.
