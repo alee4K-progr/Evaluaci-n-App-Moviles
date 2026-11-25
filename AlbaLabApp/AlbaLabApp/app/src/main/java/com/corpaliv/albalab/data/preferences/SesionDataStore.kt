@@ -16,8 +16,18 @@ data class DatosSesion(
     val invitado: Boolean
 )
 
+/** Contrato de la sesión local y las preferencias; permite probar los ViewModels sin Android. */
+interface PreferenciasSesion {
+    val sesion: Flow<DatosSesion>
+    val notificacionesActivas: Flow<Boolean>
+    suspend fun iniciarSesion(correo: String)
+    suspend fun entrarComoInvitado()
+    suspend fun cerrarSesion()
+    suspend fun guardarNotificaciones(activas: Boolean)
+}
+
 /** Guarda la sesión y las preferencias simples (DataStore). */
-class SesionDataStore(private val context: Context) {
+class SesionDataStore(private val context: Context) : PreferenciasSesion {
 
     private object Claves {
         val CORREO = stringPreferencesKey("sesion_correo")
@@ -25,38 +35,38 @@ class SesionDataStore(private val context: Context) {
         val NOTIFICACIONES = booleanPreferencesKey("notificaciones_activas")
     }
 
-    val sesion: Flow<DatosSesion> = context.dataStore.data.map { p ->
+    override val sesion: Flow<DatosSesion> = context.dataStore.data.map { p ->
         DatosSesion(
             correo = p[Claves.CORREO]?.takeIf { it.isNotBlank() },
             invitado = p[Claves.INVITADO] ?: false
         )
     }
 
-    val notificacionesActivas: Flow<Boolean> =
+    override val notificacionesActivas: Flow<Boolean> =
         context.dataStore.data.map { it[Claves.NOTIFICACIONES] ?: true }
 
-    suspend fun iniciarSesion(correo: String) {
+    override suspend fun iniciarSesion(correo: String) {
         context.dataStore.edit {
             it[Claves.CORREO] = correo
             it[Claves.INVITADO] = false
         }
     }
 
-    suspend fun entrarComoInvitado() {
+    override suspend fun entrarComoInvitado() {
         context.dataStore.edit {
             it.remove(Claves.CORREO)
             it[Claves.INVITADO] = true
         }
     }
 
-    suspend fun cerrarSesion() {
+    override suspend fun cerrarSesion() {
         context.dataStore.edit {
             it.remove(Claves.CORREO)
             it[Claves.INVITADO] = false
         }
     }
 
-    suspend fun guardarNotificaciones(activas: Boolean) {
+    override suspend fun guardarNotificaciones(activas: Boolean) {
         context.dataStore.edit { it[Claves.NOTIFICACIONES] = activas }
     }
 }
