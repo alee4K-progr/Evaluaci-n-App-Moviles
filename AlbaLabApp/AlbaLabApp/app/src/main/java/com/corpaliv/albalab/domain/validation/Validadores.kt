@@ -51,6 +51,18 @@ object Validadores {
         }
     }
 
+    /** Regla de la propuesta técnica: se exige al menos un medio de contacto (correo o teléfono). */
+    fun contacto(correo: String, telefono: String): String? =
+        if (correo.isBlank() && telefono.isBlank()) "Ingresa al menos un correo o un teléfono" else null
+
+    /** El correo es obligatorio solo si no se informó teléfono; si se escribe, debe ser válido. */
+    fun correoOpcional(correo: String, telefono: String): String? =
+        if (correo.isBlank()) contacto(correo, telefono) else correo(correo)
+
+    /** El teléfono es obligatorio solo si no se informó correo; si se escribe, debe ser válido. */
+    fun telefonoOpcional(telefono: String, correo: String): String? =
+        if (telefono.isBlank()) contacto(correo, telefono) else telefono(telefono)
+
     fun organizacion(valor: String, requerida: Boolean): String? {
         val v = valor.trim()
         return when {

@@ -7,7 +7,9 @@ data class Programa(
     val resumen: String,
     val detalle: String,
     val categoria: CategoriaPrograma,
-    val tipoSugerido: TipoColaboracion
+    val tipoSugerido: TipoColaboracion,
+    /** URL absoluta de la ilustración entregada por ms-contenidos; null en el contenido local de respaldo. */
+    val imagenUrl: String? = null
 )
 
 enum class CategoriaPrograma(val etiqueta: String) {
@@ -24,7 +26,8 @@ data class Producto(
     val descripcion: String,
     val precioReferencial: Int?,
     val destinoAporte: String,
-    val categoria: CategoriaProducto
+    val categoria: CategoriaProducto,
+    val imagenUrl: String? = null
 )
 
 enum class CategoriaProducto(val etiqueta: String) {

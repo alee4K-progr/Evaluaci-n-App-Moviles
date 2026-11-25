@@ -14,7 +14,7 @@ enum class TipoColaboracion(
         descripcion = "Aporta una vez o de forma periódica a los programas de inclusión.",
         requiereMonto = true
     ),
-    ALIANZA(
+    ALIANZA_RSE(
         etiqueta = "Alianza empresarial",
         descripcion = "Vincula a tu empresa mediante RSE, prácticas laborales o contratación inclusiva."
     ),
@@ -29,6 +29,7 @@ enum class TipoColaboracion(
     CAPACITACION(
         etiqueta = "Capacitaciones",
         descripcion = "Solicita talleres de sensibilización e inclusión para tu equipo."
+
     );
 
     companion object {
